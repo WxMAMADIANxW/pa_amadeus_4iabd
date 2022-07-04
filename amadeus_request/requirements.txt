@@ -3,3 +3,5 @@ requests==2.28.1
 ptvsd==4.3.2 # Required for debugging.
 google-cloud-secret-manager
 amadeus
+google-cloud-language==2.4.1
+googletrans==3.1.0a0
