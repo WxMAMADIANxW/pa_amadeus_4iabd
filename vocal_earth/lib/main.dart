@@ -14,5 +14,8 @@ void main() => runApp(MaterialApp(
       routes: {
         "/": (context) => const SplashScreen(),
         "/query": (context) => const Query(),
+        "/date": (context) => const Date(),
+        "/escale": (context) => const Escale(),
+        "/nbpassenger": (context) => const NbPassenger(),
       },
     ));

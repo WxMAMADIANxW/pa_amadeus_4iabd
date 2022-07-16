@@ -2,6 +2,11 @@
     package="com.example.vocal_earth">
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
+    </queries>
     <application
         android:label="vocal_earth"
         android:name="${applicationName}"
