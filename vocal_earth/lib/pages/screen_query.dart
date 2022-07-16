@@ -40,7 +40,7 @@ class _QueryState extends State<Query> {
         _isListening ? Color.fromARGB(255, 108, 160, 255) : Colors.white;
     return Scaffold(
         appBar: AppBar(
-          title: const Text('VocalEarth'),
+          title: const Text('Parlez-nous de votre voyage'),
           centerTitle: true,
           backgroundColor: const Color.fromARGB(255, 108, 160, 255),
         ),

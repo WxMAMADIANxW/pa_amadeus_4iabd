@@ -41,7 +41,7 @@ class _DateState extends State<Date> {
         : ModalRoute.of(context)?.settings.arguments as Map;
     return Scaffold(
         appBar: AppBar(
-          title: const Text('VocalEarth'),
+          title: const Text('Quand voulez-vous voyager?'),
           centerTitle: true,
           backgroundColor: const Color.fromARGB(255, 108, 160, 255),
         ),
@@ -50,6 +50,7 @@ class _DateState extends State<Date> {
               height: 200,
               width: 200,
               child: FloatingActionButton(
+                  heroTag: "btn1",
                   backgroundColor: bgColor,
                   onPressed: () {
                     _listen();
