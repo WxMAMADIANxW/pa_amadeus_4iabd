@@ -10,6 +10,8 @@ from googletrans import Translator
 from google.cloud import language
 import json
 import pandas as pd
+import requests
+
 
 # pylint: disable=C0103
 app = Flask(__name__)
@@ -27,6 +29,36 @@ app = Flask(__name__)
 # Translator client && NLP function
 translator = Translator()
 client = language.LanguageServiceClient()
+
+def getDate(text):
+  day = ""
+  month = ""
+  year = ""
+  text = translator.translate(text, dest="en").text
+  document = language.Document(content=text, type_=language.Document.Type.PLAIN_TEXT)
+  resp = client.analyze_entities(document = language.Document(content=text, type_=language.Document.Type.PLAIN_TEXT))
+  for entity in resp.entities:
+    if entity.type_.name == "DATE":
+      for metadata_name, metadata_value in entity.metadata.items():
+        if metadata_name == "day":
+          day = metadata_value
+        if metadata_name == "month":
+          month = metadata_value
+        if metadata_name == "year": 
+          year = metadata_value
+
+  if int(month) < 10:
+    if int(day) < 10:
+        date = year+"-0"+month+"-0"+day
+    else:
+        date = year+"-0"+month+"-"+day
+  else:
+    if int(day) < 10:
+        date = year+"-"+month+"-0"+day
+    else:
+        date = year+"-"+month+"-"+day
+  
+  return date
 
 def translation_nlp(query):
     departure, arrival= "", ""
@@ -47,31 +79,40 @@ def translation_nlp(query):
 
     return departure, arrival
 
-# def amadeus_request(departure, arrival, date, nb_passengers, escale):
-#     response = amadeus.shopping.flight_offers_search.get(
-#                 originLocationCode=departure,
-#                 destinationLocationCode=arrival,
-#                 departureDate=date,
-#                 adults=nb_passengers
-#             )
-#     return escale, response.data
+def amadeus_request(departure, arrival, date, nb_passengers, escale):
+    response = amadeus.shopping.flight_offers_search.get(
+                originLocationCode=departure,
+                destinationLocationCode=arrival,
+                departureDate=date,
+                adults=nb_passengers
+            )
+    return response
 
 
 @app.route('/', methods=['POST'])
 def amadeus():
     
     content = json.loads(request.data)
-    query = content['query']
-    #return f"{query}"
-
     #Translate the query && NLP on query
-    origin, destination = translation_nlp(query)
-    return f'Départ : {origin}\nArrivéé : {destination}'
+    departure, arrival = translation_nlp(content["query"])
     
-    #return c
+    #Translate the query && NLP on query
+    date = getDate(content["date"])
     
-    #Do amadeus request
-    #escale, data = amadeus_request(origin, destination, date, nbPassengers, escale)
+    data = {
+        "departure": departure,
+        "arrival": arrival,
+        "date": date,
+        "nbPassengers": content["nbPassengers"],
+        "escale": content["escale"],
+        
+    }
+    #Request Amadeus API
+    url = "" #Url of Cloud Run 2
+    # headers = {"Content-Type": "application/json; charset=utf-8"}
+    # return requests.post(f"http://{url}/amadeus",headers=headers, json=data)
+    return jsonify(data)
+    
         
 @app.route('/')
 def hello():
