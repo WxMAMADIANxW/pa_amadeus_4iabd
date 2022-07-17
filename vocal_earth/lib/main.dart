@@ -9,6 +9,7 @@ import 'package:vocal_earth/pages/screen_escale.dart';
 import 'package:vocal_earth/pages/screen_nbpassenger.dart';
 import 'package:vocal_earth/pages/screen_query.dart';
 import 'package:vocal_earth/pages/loading_amadeus.dart';
+import 'package:vocal_earth/pages/tickets.dart';
 
 void main() => runApp(MaterialApp(
       initialRoute: "/",
@@ -19,5 +20,6 @@ void main() => runApp(MaterialApp(
         "/escale": (context) => const Escale(),
         "/nbpassenger": (context) => const NbPassenger(),
         "/loading": (context) => const AmadeusLoading(),
+        "/tickets": (context) => const TicketScreen(),
       },
     ));
