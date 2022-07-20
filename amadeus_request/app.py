@@ -3,16 +3,11 @@ A sample Hello World server.
 """
 import os
 import time
-from amadeus import Client, ResponseError
-from google.cloud import secretmanager
-from flask import Flask, render_template, send_from_directory, jsonify, request
-from google.oauth2 import service_account
+from amadeus import Client
+from flask import Flask, render_template,jsonify, request
 from googletrans import Translator
-from google.cloud import language
-from google.cloud import storage
-from google.cloud import bigquery
+from google.cloud import language,storage, bigquery
 import json
-import pandas as pd
 import requests
 
 app = Flask(__name__)
@@ -122,7 +117,7 @@ def getAeroport(city):
 
 @app.route('/', methods=['POST'])
 def amadeus():
-    
+
     dict = {
       "los angeles" : "LAX",
       "new york" : "JFK",
