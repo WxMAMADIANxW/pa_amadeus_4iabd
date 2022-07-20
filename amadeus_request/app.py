@@ -14,15 +14,16 @@ import json
 import pandas as pd
 import requests
 
-
-# pylint: disable=C0103
 app = Flask(__name__)
+<<<<<<< Updated upstream
 # Amaadeus API
 
 secret = secretmanager.SecretManagerServiceClient()
 amadeus_client_id = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_id/versions/2"}).payload.data.decode("UTF-8")
 amadeus_client_secret = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_secret/versions/2"}).payload.data.decode("UTF-8")
 
+=======
+>>>>>>> Stashed changes
 
 
 
@@ -30,6 +31,7 @@ amadeus_client_secret = secret.access_secret_version({"name": f"projects/3607115
 translator = Translator()
 client = language.LanguageServiceClient()
 
+#GetDate function
 def getDate(text):
   day = ""
   month = ""
@@ -60,6 +62,7 @@ def getDate(text):
   
   return date
 
+#Function Get City of departure and arrival
 def translation_nlp(query):
     departure, arrival= "", ""
     trad = translator.translate(query, dest="en").text
@@ -82,9 +85,6 @@ def translation_nlp(query):
 
 
 def amadeus_request(departure, arrival, date, nb_passengers, escale):
-
-  
-
   amadeus = Client(
     client_id='NiItSOIbJgLxpiduy7sTS2pcGED0vtMV',
     client_secret='HOPtnAaOdNmMA3kf'
@@ -124,9 +124,8 @@ def response_amadeus(name_file) :
 
 @app.route('/', methods=['POST'])
 def amadeus():
-  
-    
 
+<<<<<<< Updated upstream
     dict = {
       "los angeles" : "LAX",
       "new york" : "JFK",
@@ -136,6 +135,8 @@ def amadeus():
       "london" : "LGW",
     }
     
+=======
+>>>>>>> Stashed changes
     content = json.loads(request.data)
     #Translate the query && NLP on query
     departure, arrival = translation_nlp(content["query"])
@@ -147,17 +148,13 @@ def amadeus():
     #Translate the query && NLP on query
     date = getDate(content["date"])
     
-    
-    
-    
-    
-    
+    #Request Amadeus
     response, namefile = amadeus_request(departure, arrival, date, nb_passengers, escale)
     data = {
         "filename": namefile,
         "escale": escale,
     }
-    #Request Amadeus API
+    #Request Cloud Run API
     url = "https://python-test-t5wtk4fqgq-ew.a.run.app" 
     headers = {"Content-Type": "application/json; charset=utf-8"}
     reponse = requests.post(url,headers=headers, json=data)
