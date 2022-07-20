@@ -5,7 +5,6 @@ import 'dart:convert';
 import "package:intl/intl.dart";
 
 class Ticket {
-  String id;
   String aeroportDepart;
   String aeroportArrivee;
   String dateDepart;
@@ -16,14 +15,13 @@ class Ticket {
   String compagnie;
   String devise;
   String classe = "ECONOMIQUE";
-  String escale;
   String? villeEscale;
   String? dateEscale;
   String? aeroportEscale;
   String lastTicketingDate;
 
   Ticket(
-      {required this.id,
+      {
       required this.aeroportDepart,
       required this.aeroportArrivee,
       required this.dateDepart,
@@ -34,7 +32,6 @@ class Ticket {
       required this.compagnie,
       required this.devise,
       required this.classe,
-      required this.escale,
       required this.lastTicketingDate,
       this.villeEscale,
       this.dateEscale,
@@ -43,7 +40,6 @@ class Ticket {
   factory Ticket.fromJson(Map<String, dynamic> json) {
     if (json['escale'] == "true") {
       return Ticket(
-          id: json['id'],
           aeroportDepart: json['aeroportDepart'],
           aeroportArrivee: json['aeroportArrivee'],
           dateDepart: json['dateDepart'],
@@ -54,14 +50,12 @@ class Ticket {
           compagnie: json['compagnie'],
           devise: json['devise'],
           classe: "ECONOMIQUE",
-          escale: json['escale'],
           villeEscale: json['villeEscale'],
           dateEscale: json['dateEscale'],
           aeroportEscale: json['aeroportEscale'],
           lastTicketingDate: json['lastTicketingDate']);
     } else {
       return Ticket(
-          id: json['id'],
           aeroportDepart: json['aeroportDepart'],
           aeroportArrivee: json['aeroportArrivee'],
           dateDepart: json['dateDepart'],
@@ -72,7 +66,6 @@ class Ticket {
           compagnie: json['compagnie'],
           devise: json['devise'],
           classe: "ECONOMIQUE",
-          escale: json['escale'],
           lastTicketingDate: json['lastTicketingDate']);
     }
   }
@@ -92,9 +85,6 @@ class Ticket {
       "\n" +
       "Classe : " +
       classe +
-      "\n" +
-      "Escale : " +
-      escale +
       "\n" +
       "Date de d : " +
       dateDepart;
