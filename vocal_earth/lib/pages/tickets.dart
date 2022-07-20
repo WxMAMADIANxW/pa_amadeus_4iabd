@@ -34,32 +34,32 @@ class _TicketScreenState extends State<TicketScreen> {
         ? data
         : ModalRoute.of(context)?.settings.arguments as Map;
     body = data["body"] as List<Ticket>;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Billets"),
-      ),
-    );
     // return Scaffold(
     //   appBar: AppBar(
     //     title: Text("Billets"),
     //   ),
-    //   body: ListView.builder(
-    //     itemCount: body.length,
-    //     itemBuilder: (context, index) {
-    //       return ListTile(
-    //         title: Text(body[index].title),
-    //         subtitle: Text(body[index].subtitle),
-    //         onTap: () {
-    //           FlutterTts flutterTts = FlutterTts();
-    //           flutterTts.setLanguage("fr-FR");
-    //           flutterTts.setSpeechRate(0.5);
-    //           flutterTts.setPitch(0.8);
-    //           String toSay = body[index].description;
-    //           flutterTts.speak(toSay);
-    //         },
-    //       );
-    //     },
-    //   ),
     // );
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Billets"),
+      ),
+      body: ListView.builder(
+        itemCount: body.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(body[index].title),
+            subtitle: Text(body[index].subtitle),
+            onTap: () {
+              FlutterTts flutterTts = FlutterTts();
+              flutterTts.setLanguage("fr-FR");
+              flutterTts.setSpeechRate(0.5);
+              flutterTts.setPitch(0.8);
+              String toSay = body[index].description;
+              flutterTts.speak(toSay);
+            },
+          );
+        },
+      ),
+    );
   }
 }

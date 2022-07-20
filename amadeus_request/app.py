@@ -2,12 +2,14 @@
 A sample Hello World server.
 """
 import os
+import time
 from amadeus import Client, ResponseError
 from google.cloud import secretmanager
 from flask import Flask, render_template, send_from_directory, jsonify, request
 from google.oauth2 import service_account
 from googletrans import Translator
 from google.cloud import language
+from google.cloud import storage
 import json
 import pandas as pd
 import requests
@@ -17,12 +19,10 @@ import requests
 app = Flask(__name__)
 # Amaadeus API
 
-# secret = secretmanager.SecretManagerServiceClient()
-# amadeus_client_id = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_id"}).payload.data.decode("UTF-8")
-# amadeus_client_secret = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_secret"}).payload.data.decode("UTF-8")
+secret = secretmanager.SecretManagerServiceClient()
+amadeus_client_id = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_id/versions/2"}).payload.data.decode("UTF-8")
+amadeus_client_secret = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_secret/versions/2"}).payload.data.decode("UTF-8")
 
-# amadeus = Client(client_id = amadeus_client_id,
-#     client_secret = amadeus_client_secret)
 
 
 
@@ -78,40 +78,95 @@ def translation_nlp(query):
                 arrival = resp.entities[0].name
 
     return departure, arrival
+  
+
 
 def amadeus_request(departure, arrival, date, nb_passengers, escale):
-    response = amadeus.shopping.flight_offers_search.get(
-                originLocationCode=departure,
-                destinationLocationCode=arrival,
-                departureDate=date,
-                adults=nb_passengers
-            )
-    return response
+
+  
+
+  amadeus = Client(
+    client_id='NiItSOIbJgLxpiduy7sTS2pcGED0vtMV',
+    client_secret='HOPtnAaOdNmMA3kf'
+  )
+
+  response = amadeus.shopping.flight_offers_search.get(
+              originLocationCode=departure,
+              destinationLocationCode=arrival,
+              departureDate=date,
+              adults=nb_passengers
+          )
+  name_file = "{}{}{}{}{}{}".format( departure,arrival,date, nb_passengers,escale,time.time_ns())
+  client = storage.Client(project='cellular-smoke-352111')
+  bucket = client.get_bucket("amadeus_bucket")
+  blob = bucket.blob(f"input/{name_file}")
+  with open(name_file, "a+") as outfile:
+      json.dump(response.data, outfile)
+  blob.upload_from_filename(name_file)
+  
+  return response, name_file
+
+def response_amadeus(name_file) :
+  client = storage.Client(project='cellular-smoke-352111')
+  bucket = client.get_bucket("amadeus_bucket")
+  blob = bucket.blob(f"output/{name_file}")
+  
+  while(not blob.exists()):
+    time.sleep(1)
+  
+  jl = blob.download_as_string()
+  data = []  
+  for line in jl.decode('utf-8').splitlines():
+    data.append(json.loads(line))
+  
+  return data
 
 
 @app.route('/', methods=['POST'])
 def amadeus():
+  
+    
+
+    dict = {
+      "los angeles" : "LAX",
+      "new york" : "JFK",
+      "madrid" : "MAD",
+      "paris" : "CDG",
+      "rome" : "FCO",
+      "london" : "LGW",
+    }
     
     content = json.loads(request.data)
     #Translate the query && NLP on query
     departure, arrival = translation_nlp(content["query"])
+    departure = dict[departure.lower()]
+    arrival = dict[arrival.lower()]
+    nb_passengers = content["nbPassengers"]
+    escale = content["escale"]
     
     #Translate the query && NLP on query
     date = getDate(content["date"])
     
+    
+    
+    
+    
+    
+    response, namefile = amadeus_request(departure, arrival, date, nb_passengers, escale)
     data = {
-        "departure": departure,
-        "arrival": arrival,
-        "date": date,
-        "nbPassengers": content["nbPassengers"],
-        "escale": content["escale"],
-        
+        "filename": namefile,
+        "escale": escale,
     }
     #Request Amadeus API
-    url = "" #Url of Cloud Run 2
-    # headers = {"Content-Type": "application/json; charset=utf-8"}
-    # return requests.post(f"http://{url}/amadeus",headers=headers, json=data)
-    return jsonify(data)
+    url = "https://python-test-t5wtk4fqgq-ew.a.run.app" 
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    reponse = requests.post(url,headers=headers, json=data)
+    
+    res = response_amadeus(namefile)
+    
+    return jsonify(res)
+    
+
     
         
 @app.route('/')

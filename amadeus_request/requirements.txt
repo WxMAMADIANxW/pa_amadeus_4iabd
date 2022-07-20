@@ -6,3 +6,4 @@ amadeus
 pandas
 google-cloud-language==2.4.1
 googletrans==3.1.0a0
+google-cloud-storage
