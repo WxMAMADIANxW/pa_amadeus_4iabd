@@ -10,6 +10,7 @@ from google.oauth2 import service_account
 from googletrans import Translator
 from google.cloud import language
 from google.cloud import storage
+from google.cloud import bigquery
 import json
 import pandas as pd
 import requests
@@ -19,9 +20,9 @@ import requests
 app = Flask(__name__)
 # Amaadeus API
 
-secret = secretmanager.SecretManagerServiceClient()
-amadeus_client_id = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_id/versions/2"}).payload.data.decode("UTF-8")
-amadeus_client_secret = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_secret/versions/2"}).payload.data.decode("UTF-8")
+# secret = secretmanager.SecretManagerServiceClient()
+# amadeus_client_id = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_id/versions/2"}).payload.data.decode("UTF-8")
+# amadeus_client_secret = secret.access_secret_version({"name": f"projects/360711503960/secrets/amadeus_client_secret/versions/2"}).payload.data.decode("UTF-8")
 
 
 
@@ -86,8 +87,8 @@ def amadeus_request(departure, arrival, date, nb_passengers, escale):
   
 
   amadeus = Client(
-    client_id='NiItSOIbJgLxpiduy7sTS2pcGED0vtMV',
-    client_secret='HOPtnAaOdNmMA3kf'
+    client_id=os.environ['AMADEUS_CLIENT_ID'],
+    client_secret=os.environ['AMADEUS_CLIENT_SECRET'],
   )
 
   response = amadeus.shopping.flight_offers_search.get(
@@ -97,8 +98,8 @@ def amadeus_request(departure, arrival, date, nb_passengers, escale):
               adults=nb_passengers
           )
   name_file = "{}{}{}{}{}{}".format( departure,arrival,date, nb_passengers,escale,time.time_ns())
-  client = storage.Client(project='cellular-smoke-352111')
-  bucket = client.get_bucket("amadeus_bucket")
+  client = storage.Client(project=os.environ['PROJECT_ID'])
+  bucket = client.get_bucket(os.environ['BUCKET_NAME'])
   blob = bucket.blob(f"input/{name_file}")
   with open(name_file, "a+") as outfile:
       json.dump(response.data, outfile)
@@ -107,8 +108,8 @@ def amadeus_request(departure, arrival, date, nb_passengers, escale):
   return response, name_file
 
 def response_amadeus(name_file) :
-  client = storage.Client(project='cellular-smoke-352111')
-  bucket = client.get_bucket("amadeus_bucket")
+  client = storage.Client(project=os.environ['PROJECT_ID'])
+  bucket = client.get_bucket(os.environ['BUCKET_NAME'])
   blob = bucket.blob(f"output/{name_file}")
   
   while(not blob.exists()):
@@ -121,26 +122,23 @@ def response_amadeus(name_file) :
   
   return data
 
+def getAeroport(city):
+  client= bigquery.Client(project=os.environ['PROJECT_ID'])
+  query = f"SELECT * FROM `cellular-smoke-352111.amadeus.airport` WHERE city = '{city}'"
+  
+  return client.query(query).to_dataframe().iloc[0]['code']
 
 @app.route('/', methods=['POST'])
 def amadeus():
   
     
 
-    dict = {
-      "los angeles" : "LAX",
-      "new york" : "JFK",
-      "madrid" : "MAD",
-      "paris" : "CDG",
-      "rome" : "FCO",
-      "london" : "LGW",
-    }
     
     content = json.loads(request.data)
     #Translate the query && NLP on query
     departure, arrival = translation_nlp(content["query"])
-    departure = dict[departure.lower()]
-    arrival = dict[arrival.lower()]
+    departure = getAeroport(departure)
+    arrival = getAeroport(arrival)
     nb_passengers = content["nbPassengers"]
     escale = content["escale"]
     

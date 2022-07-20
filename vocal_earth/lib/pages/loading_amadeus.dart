@@ -27,11 +27,11 @@ class _AmadeusLoadingState extends State<AmadeusLoading> {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
+      body: jsonEncode(<String, dynamic>{
         'query': data["text"],
         'date': data["date"],
         'escale': data["escale"],
-        'nbPassagers': data["nbPassagers"],
+        'nbPassengers': data["nbPassenger"],
       }),
     );
     if (response.statusCode == 200) {
@@ -47,7 +47,7 @@ class _AmadeusLoadingState extends State<AmadeusLoading> {
         : ModalRoute.of(context)?.settings.arguments as Map;
 
     List<Ticket> body = await fetchTickets(data);
-    Navigator.pushNamed(context, '/amadeus', arguments: {
+    Navigator.pushNamed(context, '/tickets', arguments: {
       "body": body,
     });
 
@@ -62,12 +62,13 @@ class _AmadeusLoadingState extends State<AmadeusLoading> {
       Future.delayed(Duration(milliseconds: 1000), () {
         flutterTts.speak(toSay);
       });
-      amadeusDataTransfer();
+
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    amadeusDataTransfer();
     return Scaffold(
       body: Center(
           child: SpinKitWave(
